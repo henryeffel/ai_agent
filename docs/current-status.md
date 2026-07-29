@@ -19,6 +19,7 @@ P0-6 Docker 구성                       구현 완료
 P0-6 로컬 Docker 실행                  6GB RAM 리소스 제약으로 중단
 P0-6 GitHub Actions CI                 완료
 P0-6 PostgreSQL/pgvector CI 통합 테스트 완료
+P0-6 Meeting-to-Action PostgreSQL E2E  완료
 ```
 
 ## 기준 코드베이스
@@ -445,10 +446,11 @@ WSL2 VM 생성이 `0x800705aa` 리소스 부족 오류로 중단됐다. 로컬 �
 
 ### 이후 작업
 
-1. 전체 Meeting-to-Action Workflow PostgreSQL 테스트 확장
-2. 구조화 로그와 correlation ID 구현
-3. RAG 평가셋과 Recall@3 측정
-4. README 포트폴리오 문구 및 CI 배지 정리
+1. 전체 Git 이력 Secret scan
+2. 기존 Azure 구현 위치 정리
+3. 구조화 로그와 correlation ID 구현
+4. RAG 평가셋과 Recall@3 측정
+5. README 포트폴리오 문구 및 CI 배지 정리
 
 P0 Docker 범위는 Backend와 PostgreSQL/pgvector로 제한한다. Frontend는 로컬 `npm run dev`로 실행하며 컨테이너화는 P0 이후 선택 작업으로 둔다.
 

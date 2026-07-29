@@ -615,10 +615,10 @@ Mock Vector Store, NVIDIA 임베딩 실제 호출과 근거 기반 Action Plan �
 - [x] Backend Dockerfile
 - [x] PostgreSQL/pgvector Docker Compose
 - [x] Health check 구성
-- [ ] vector extension 및 2,048차원 저장·검색 검증
-- [ ] PostgreSQL 조건부 상태 변경 동시성 검증
-- [ ] 동일 Action 외부 호출 1회 검증
-- [ ] Meeting-to-Action 통합 테스트
+- [x] vector extension 및 2,048차원 저장·검색 검증
+- [x] PostgreSQL 조건부 상태 변경 동시성 검증
+- [x] 동일 Action 외부 호출 1회 검증
+- [x] Meeting-to-Action 통합 테스트
 
 완료 조건:
 
@@ -636,7 +636,7 @@ docker compose up --build
 - [ ] Recall@3 및 출처 정확성 측정
 - [ ] Microsoft Graph Calendar 재연동
 - [ ] Microsoft Graph To Do 재연동
-- [ ] GitHub Actions
+- [x] GitHub Actions
 - [ ] 3~5분 시연 영상
 - [ ] README 포트폴리오 문구 정리
 

@@ -30,10 +30,6 @@
 - 로컬 `.env` Git 제외 확인
 - 작업 트리 Secret 후보 패턴 검사: 발견 없음
 
-### 남은 작업
-
-- PostgreSQL 기반 전체 Meeting-to-Action E2E 테스트 확장
-
 ### GitHub Actions 최초 실행 결과
 
 - Workflow: `Backend CI`
@@ -44,6 +40,17 @@
 - Backend Docker 이미지 빌드: 통과
 - Node.js 20 사용 중단 경고를 제거하기 위해 `actions/checkout@v5`와
   `actions/setup-python@v6`로 갱신했다.
+
+### Meeting-to-Action PostgreSQL E2E
+
+- 실제 PostgreSQL/pgvector 서비스에서 조직 지식 Chunk를 색인한다.
+- 회의 Transcript를 분석하고 검색 근거 기반 Action Plan을 생성한다.
+- 생성된 Plan이 `PENDING_APPROVAL` 상태이고 근거 Chunk ID를 저장하는지
+  확인한다.
+- 사용자 승인 후 Microsoft To Do Mock Tool을 실행한다.
+- `SUCCEEDED` 상태, 실행 횟수 1회, Provider와 외부 리소스 ID가 DB 조회
+  결과에 유지되는지 확인한다.
+- GitHub Actions PR 검증: 통과
 
 ## 2026-07-29 — Docker Compose 구성
 
