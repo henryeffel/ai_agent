@@ -1,5 +1,44 @@
 # IEUM 개발 작업 로그
 
+## 2026-07-29 — GitHub 게시 및 PostgreSQL E2E 완료
+
+### GitHub 게시
+
+- 원격 저장소: `https://github.com/henryeffel/ai_agent.git`
+- 빈 원격 저장소에 `main` 최초 브랜치를 생성했다.
+- 최초 CI 구성 커밋: `e7521ea`
+- CI Action 버전 및 문서 갱신 커밋: `8a4013a`
+- PostgreSQL Meeting-to-Action E2E 커밋: `6d57a00`
+- E2E 검증 문서 갱신 커밋: `448e8e9`
+- 작업 브랜치: `agent/add-postgres-e2e`
+- Draft PR: `https://github.com/henryeffel/ai_agent/pull/1`
+
+### 최종 검증 상태
+
+- 로컬 SQLite·Mock 테스트: `23 passed`
+- GitHub Actions PostgreSQL/pgvector 통합 테스트: 통과
+- 2,048차원 Vector 저장·검색: 통과
+- PostgreSQL 조건부 상태 변경 및 동시 실행 선점: 통과
+- Meeting-to-Action PostgreSQL E2E: 통과
+- Backend Docker 이미지 빌드: 통과
+- Draft PR 최종 CI: 통과
+
+### 게시 제외 항목
+
+- 팀 발표 PDF
+- JD 이미지
+- 루트 임시 `llm_api.py`
+- `ms-2nd-project-publish` 과거 보존본
+- 로컬 `.env`와 Secret
+
+### 다음 작업
+
+1. 전체 Git 이력 Secret scan
+2. 기존 Azure 구현 위치 정리
+3. 구조화 로그와 correlation ID
+4. RAG 평가셋과 Recall@3 측정
+5. README 포트폴리오 문구와 CI 배지 정리
+
 ## 2026-07-29 — GitHub Actions PostgreSQL 통합 검증 구성
 
 ### 배경
@@ -76,6 +115,9 @@
 - Windows 재부팅 후 Docker Engine 정상화 확인
 - `docker compose up --build` 실제 기동
 - vector extension, 2,048차원 저장·검색, PostgreSQL 동시성 및 전체 Workflow 통합 검증
+
+> 이 체크포인트는 당시 기록이다. 이후 로컬 Docker 대신 GitHub Actions
+> runner의 PostgreSQL/pgvector 서비스 컨테이너로 통합 검증을 완료했다.
 
 ## 2026-07-28 — P0 개발 시작
 
