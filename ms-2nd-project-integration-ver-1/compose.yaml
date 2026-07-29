@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ieum
+      POSTGRES_USER: ieum
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ieum}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ieum -d ieum"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./Backend
+    environment:
+      APP_MODE: mock
+      LLM_PROVIDER: mock
+      PRODUCTIVITY_PROVIDER: mock
+      EMBEDDING_PROVIDER: mock
+      MOCK_EMBEDDING_DIMENSION: "2048"
+      VECTOR_SEARCH_PROVIDER: pgvector
+      DATABASE_URL: postgresql+psycopg://ieum:${POSTGRES_PASSWORD:-ieum}@postgres:5432/ieum
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:5174
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

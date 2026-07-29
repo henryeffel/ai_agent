@@ -1,0 +1,71 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: ieum_test
+          POSTGRES_USER: ieum
+          POSTGRES_PASSWORD: ieum_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ieum -d ieum_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: ms-2nd-project-integration-ver-1/Backend
+
+    env:
+      APP_MODE: mock
+      LLM_PROVIDER: mock
+      PRODUCTIVITY_PROVIDER: mock
+      EMBEDDING_PROVIDER: mock
+      DATABASE_URL: postgresql+psycopg://ieum:ieum_test@localhost:5432/ieum_test
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: ms-2nd-project-integration-ver-1/Backend/requirements.txt
+
+      - name: Install dependencies
+        run: python -m pip install --requirement requirements.txt
+
+      - name: Run SQLite and mock tests
+        run: python -m pytest -q tests --ignore=tests/integration
+        env:
+          VECTOR_SEARCH_PROVIDER: mock
+          MOCK_EMBEDDING_DIMENSION: "64"
+
+      - name: Run PostgreSQL and pgvector integration tests
+        run: python -m pytest -q tests/integration
+        env:
+          VECTOR_SEARCH_PROVIDER: pgvector
+          MOCK_EMBEDDING_DIMENSION: "2048"
+
+      - name: Build backend Docker image
+        run: docker build --tag ieum-backend:ci .

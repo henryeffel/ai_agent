@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+*.py[cod]
+node_modules/
+dist/
+build/
+token_cache.bin
+*.pem
+*.key
+*.db
+desktop.ini
+.DS_Store
