@@ -24,6 +24,7 @@ os.environ["VECTOR_SEARCH_PROVIDER"] = "pgvector"
 from ieum.database import Base, get_engine, get_session_factory
 from ieum.models import action_plan, knowledge  # noqa: F401, E402
 from ieum.providers.embedding.factory import get_embedding_provider
+from ieum.providers.llm.factory import get_llm_provider
 from ieum.providers.productivity.factory import get_productivity_provider
 from ieum.providers.vector_search.factory import get_vector_search_provider
 from ieum.services.action_workflow import get_action_workflow_service
@@ -39,6 +40,7 @@ def clean_postgres_database():
     get_productivity_provider.cache_clear()
     get_vector_search_provider.cache_clear()
     get_embedding_provider.cache_clear()
+    get_llm_provider.cache_clear()
     get_session_factory.cache_clear()
     get_engine.cache_clear()
 
@@ -54,6 +56,7 @@ def clean_postgres_database():
     get_productivity_provider.cache_clear()
     get_vector_search_provider.cache_clear()
     get_embedding_provider.cache_clear()
+    get_llm_provider.cache_clear()
     engine.dispose()
     get_session_factory.cache_clear()
     get_engine.cache_clear()
@@ -151,3 +154,78 @@ def test_postgres_concurrent_execution_claims_plan_once():
     assert stored["status"] == "SUCCEEDED"
     assert stored["actions"][0]["attempts"] == 1
     assert stored["actions"][0]["external_resource_id"]
+
+
+def test_meeting_to_grounded_action_executes_end_to_end():
+    meeting_id = f"meeting-e2e-{uuid4()}"
+    transcript = (
+        "신제품 마케팅 광고 예산을 검토했고 후속 작업을 "
+        "할 일 목록으로 관리하기로 결정했습니다."
+    )
+
+    with TestClient(app) as client:
+        indexed = client.post(
+            "/api/v1/knowledge/chunks",
+            json={
+                "chunks": [
+                    {
+                        "chunk_id": "marketing-policy-e2e",
+                        "document_id": "marketing-policy",
+                        "title": "마케팅 예산 후속 작업 정책",
+                        "content": (
+                            "신제품 마케팅 광고 예산 검토 후 후속 작업은 "
+                            "Microsoft To Do에서 관리합니다."
+                        ),
+                        "category": "history",
+                        "chunk_index": 0,
+                        "source_url": "https://example.invalid/marketing-policy",
+                    }
+                ]
+            },
+        )
+        assert indexed.status_code == 201
+
+        planned = client.post(
+            "/api/v1/action-plans/grounded",
+            json={
+                "meeting_id": meeting_id,
+                "transcript": transcript,
+                "category": "history",
+                "top_k": 3,
+                "min_score": -1.0,
+            },
+        )
+        assert planned.status_code == 201
+        plan = planned.json()
+        plan_id = plan["id"]
+        assert plan["status"] == "PENDING_APPROVAL"
+        assert plan["evidence_chunk_ids"] == ["marketing-policy-e2e"]
+        assert plan["actions"][0]["tool"] == "todo"
+        assert "marketing-policy-e2e" in (
+            plan["actions"][0]["payload"]["description"]
+        )
+
+        approved = client.post(
+            f"/api/v1/action-plans/{plan_id}/approve",
+            json={"actor": actor},
+        )
+        assert approved.status_code == 200
+        assert approved.json()["status"] == "APPROVED"
+
+        executed = client.post(f"/api/v1/action-plans/{plan_id}/execute")
+        assert executed.status_code == 200
+        result = executed.json()
+
+        stored = client.get(f"/api/v1/action-plans/{plan_id}")
+        assert stored.status_code == 200
+
+    assert result["meeting_id"] == meeting_id
+    assert result["status"] == "SUCCEEDED"
+    assert result["evidence_chunk_ids"] == ["marketing-policy-e2e"]
+    assert result["actions"][0]["status"] == "SUCCEEDED"
+    assert result["actions"][0]["attempts"] == 1
+    assert result["actions"][0]["provider"] == "mock_microsoft_365"
+    assert result["actions"][0]["external_resource_id"].startswith(
+        "mock-todo-"
+    )
+    assert stored.json() == result
