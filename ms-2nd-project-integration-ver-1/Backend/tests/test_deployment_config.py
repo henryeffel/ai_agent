@@ -16,6 +16,7 @@ def test_render_blueprint_uses_demo_mode_and_secret_placeholders():
     assert "PRODUCTIVITY_PROVIDER\n        value: mock" in blueprint
     assert "alembic upgrade head" in blueprint
     assert "--port $PORT" in blueprint
+    assert 'dockerCommand: sh -c "' not in blueprint
     for secret in ("DATABASE_URL", "NVIDIA_API_KEY", "ALLOWED_ORIGINS"):
         assert f"key: {secret}\n        sync: false" in blueprint
 
