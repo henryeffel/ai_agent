@@ -54,7 +54,9 @@ class GroundedActionPlanCreate(BaseModel):
 class ActionPlanDecision(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    actor: EmailStr
+    # Kept temporarily for React client compatibility. Authorization and audit
+    # identity come from ActorContext, never from this user-controlled value.
+    actor: EmailStr | None = None
 
 
 class ActionExecutionResponse(BaseModel):

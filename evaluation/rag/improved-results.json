@@ -1,0 +1,22 @@
+{
+  "pipeline": "improved",
+  "dataset": {
+    "documents": 10,
+    "queries": 20
+  },
+  "chunk_count": 20,
+  "metrics": {
+    "recall_at_3": 1.0,
+    "evidence_hit_rate": 1.0,
+    "grounded_decision_accuracy": 1.0,
+    "insufficient_evidence_rejection_rate": 1.0,
+    "average_search_latency_ms": 0.0468
+  },
+  "failure_count": 0,
+  "failures": [],
+  "limitations": [
+    "Small synthetic Korean policy dataset; results are not production quality claims.",
+    "Lexical overlap evaluator does not measure embedding model quality.",
+    "Latency excludes network, database, and embedding generation time."
+  ]
+}

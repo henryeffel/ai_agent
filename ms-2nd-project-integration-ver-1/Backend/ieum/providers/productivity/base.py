@@ -31,6 +31,25 @@ class ProductivityTimeoutError(ProductivityProviderError):
         )
 
 
+class ProductivityConfigurationError(ProductivityProviderError):
+    def __init__(self, message: str):
+        super().__init__(code="configuration_error", message=message)
+
+
+class ProductivityRateLimitedError(ProductivityProviderError):
+    def __init__(self, retry_after_seconds: int | None = None):
+        self.retry_after_seconds = retry_after_seconds
+        suffix = (
+            f" {retry_after_seconds}초 후 다시 시도할 수 있습니다."
+            if retry_after_seconds is not None
+            else ""
+        )
+        super().__init__(
+            code="rate_limited",
+            message=f"Microsoft Graph 요청 한도를 초과했습니다.{suffix}",
+        )
+
+
 class DuplicateActionError(ProductivityProviderError):
     def __init__(self):
         super().__init__(

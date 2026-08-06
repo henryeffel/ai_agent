@@ -1,11 +1,8 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppProvider, useAppContext } from "./context/AppContext";
 import Login from "./pages/Login";
-import Home from "./pages/Home";
-import Meeting from "./pages/Meeting";
-import Result from "./pages/Result";
-import Upload from "./pages/Upload";
+import DemoWorkflow from "./pages/DemoWorkflow";
 import AppLayout from "./components/AppLayout";
 import Settings from "./components/Settings";
 
@@ -14,84 +11,23 @@ function ProtectedRoute({ children }) {
   return isLoggedIn ? children : <Navigate to="/" replace />;
 }
 
+function ProtectedPage({ children }) {
+  return <ProtectedRoute><AppLayout>{children}</AppLayout></ProtectedRoute>;
+}
+
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Home />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/meeting"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Meeting />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/upload"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Upload />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/result"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Result />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ▼▼▼ [추가] 이 블록을 추가하세요! ▼▼▼ */}
-        <Route
-          path="/result/:id"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Result />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Settings />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/home" element={<ProtectedPage><DemoWorkflow /></ProtectedPage>} />
+        <Route path="/settings" element={<ProtectedPage><Settings /></ProtectedPage>} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
-function App() {
-  return (
-    <AppProvider>
-      <AppRoutes />
-    </AppProvider>
-  );
+export default function App() {
+  return <AppProvider><AppRoutes /></AppProvider>;
 }
-
-export default App;

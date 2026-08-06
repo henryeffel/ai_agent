@@ -11,14 +11,15 @@ P0-2 VectorSearch Provider            완료
 P0-2 Productivity Provider            완료
 P0-3 Transcript 구조화 분석           완료
 P0-4 Action Schema·승인 Workflow       구현 완료
-P0-4 PostgreSQL 실제 통합 검증          Docker 단계 대기
+P0-4 PostgreSQL 실제 통합 검증          CI 완료
 P0-5 RAG Provider·API                 구현 완료
 P0-5 RAG 근거·Action Plan 연결         완료
-P0-5 PostgreSQL/pgvector 실제 검증     Docker 설치 대기
+P0-5 PostgreSQL/pgvector 실제 검증     CI 완료
 P0-6 Docker 구성                       구현 완료
 P0-6 로컬 Docker 실행                  6GB RAM 리소스 제약으로 중단
 P0-6 GitHub Actions CI                 완료
 P0-6 PostgreSQL/pgvector CI 통합 테스트 완료
+P0-6 Meeting-to-Action PostgreSQL E2E  완료
 ```
 
 ## 기준 코드베이스
@@ -32,11 +33,22 @@ ms-2nd-project-integration-ver-1
 Git 설정:
 
 ```text
-branch: main
+current branch: agent/add-postgres-e2e
+base branch: main
 origin: https://github.com/henryeffel/ai_agent.git
 ```
 
-아직 최초 커밋과 push는 수행하지 않았다.
+GitHub 게시 상태:
+
+```text
+main 최초 게시: 완료
+Backend CI: 성공
+Draft PR: https://github.com/henryeffel/ai_agent/pull/1
+latest PR commit: 448e8e9
+```
+
+PDF, JD 이미지, 루트 임시 `llm_api.py`와 `ms-2nd-project-publish` 보존본은
+GitHub 게시 범위에서 제외했다.
 
 ## 완료된 보안 작업
 
@@ -445,10 +457,11 @@ WSL2 VM 생성이 `0x800705aa` 리소스 부족 오류로 중단됐다. 로컬 �
 
 ### 이후 작업
 
-1. 전체 Meeting-to-Action Workflow PostgreSQL 테스트 확장
-2. 구조화 로그와 correlation ID 구현
-3. RAG 평가셋과 Recall@3 측정
-4. README 포트폴리오 문구 및 CI 배지 정리
+1. 전체 Git 이력 Secret scan
+2. 기존 Azure 구현 위치 정리
+3. 구조화 로그와 correlation ID 구현
+4. RAG 평가셋과 Recall@3 측정
+5. README 포트폴리오 문구 및 CI 배지 정리
 
 P0 Docker 범위는 Backend와 PostgreSQL/pgvector로 제한한다. Frontend는 로컬 `npm run dev`로 실행하며 컨테이너화는 P0 이후 선택 작업으로 둔다.
 

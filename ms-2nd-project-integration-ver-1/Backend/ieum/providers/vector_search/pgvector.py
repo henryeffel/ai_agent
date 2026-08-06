@@ -1,4 +1,4 @@
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
 from ieum.database import get_engine, get_session_factory
@@ -13,21 +13,14 @@ class PgVectorSearchProvider(VectorSearchProvider):
         if embedding_provider.dimension != 2048:
             raise RuntimeError("pgvector Provider는 2048차원 임베딩이 필요합니다.")
         self.embedding_provider = embedding_provider
-        self._initialize_schema()
+        if get_engine().dialect.name != "postgresql":
+            raise RuntimeError(
+                "VECTOR_SEARCH_PROVIDER=pgvector는 PostgreSQL DATABASE_URL이 필요합니다."
+            )
 
     @property
     def provider_name(self) -> str:
         return "pgvector"
-
-    def _initialize_schema(self):
-        engine = get_engine()
-        if engine.dialect.name != "postgresql":
-            raise RuntimeError(
-                "VECTOR_SEARCH_PROVIDER=pgvector는 PostgreSQL DATABASE_URL이 필요합니다."
-            )
-        with engine.begin() as connection:
-            connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            DocumentChunkModel.__table__.create(connection, checkfirst=True)
 
     def index_chunks(self, chunks: list[DocumentChunkInput]) -> int:
         vectors = self.embedding_provider.embed_documents(
@@ -43,8 +36,10 @@ class PgVectorSearchProvider(VectorSearchProvider):
                     "content": chunk.content,
                     "category": chunk.category,
                     "chunk_index": chunk.chunk_index,
+                    "section": chunk.section,
                     "source_url": chunk.source_url,
                     "document_created_at": chunk.created_at,
+                    "document_updated_at": chunk.updated_at,
                     "embedding": vector,
                 }
             )
@@ -96,7 +91,10 @@ class PgVectorSearchProvider(VectorSearchProvider):
                         content=chunk.content,
                         category=chunk.category,
                         chunk_index=chunk.chunk_index,
+                        section=chunk.section,
                         source_url=chunk.source_url,
+                        created_at=chunk.document_created_at,
+                        updated_at=chunk.document_updated_at,
                         score=score,
                     )
                 )

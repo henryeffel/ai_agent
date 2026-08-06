@@ -31,10 +31,3 @@ def get_session_factory():
         class_=Session,
         expire_on_commit=False,
     )
-
-
-def init_database():
-    # Import model modules before create_all so metadata contains every table.
-    from ieum.models import action_plan  # noqa: F401
-
-    Base.metadata.create_all(get_engine())
