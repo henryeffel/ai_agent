@@ -18,4 +18,4 @@ USER ieum
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic upgrade head && if [ \"$APP_MODE\" = \"demo\" ]; then python -m ieum.demo seed; fi && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["python", "-m", "ieum.start"]
