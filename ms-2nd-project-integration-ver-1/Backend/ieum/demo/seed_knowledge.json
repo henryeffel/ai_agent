@@ -1,0 +1,37 @@
+[
+  {
+    "document_id": "demo-travel-policy",
+    "title": "출장비 규정",
+    "category": "policy",
+    "updated_at": "2026-08-01T00:00:00+09:00",
+    "content": "# 교통비\n\n국내 출장 교통비는 영수증을 첨부하여 실비로 정산합니다.\n\n# 승인\n\n출장비가 10만 원 이상이면 팀장 승인이 필요합니다."
+  },
+  {
+    "document_id": "demo-meeting-room-policy",
+    "title": "회의실 운영 규정",
+    "category": "policy",
+    "updated_at": "2026-08-01T00:00:00+09:00",
+    "content": "# 예약\n\n회의실은 사내 포털에서 최소 하루 전에 예약합니다.\n\n# 취소\n\n사용하지 않는 예약은 시작 두 시간 전에 취소합니다."
+  },
+  {
+    "document_id": "demo-security-policy",
+    "title": "정보보안 지침",
+    "category": "security",
+    "updated_at": "2026-08-01T00:00:00+09:00",
+    "content": "# 계정\n\n비밀번호는 90일마다 변경하고 다중 인증을 사용합니다.\n\n# 사고 대응\n\n보안 사고는 발견 즉시 보안팀에 신고합니다."
+  },
+  {
+    "document_id": "demo-purchase-policy",
+    "title": "구매 승인 규정",
+    "category": "finance",
+    "updated_at": "2026-08-01T00:00:00+09:00",
+    "content": "# 소액 구매\n\n50만 원 미만 구매는 팀장 승인으로 진행합니다.\n\n# 고액 구매\n\n50만 원 이상 구매는 재무팀 검토가 필요합니다."
+  },
+  {
+    "document_id": "demo-release-policy",
+    "title": "서비스 배포 절차",
+    "category": "engineering",
+    "updated_at": "2026-08-01T00:00:00+09:00",
+    "content": "# 승인\n\n운영 배포는 코드 리뷰와 QA 승인을 모두 받아야 합니다.\n\n# 복구\n\n장애 발생 시 배포 담당자가 롤백 절차를 수행합니다."
+  }
+]

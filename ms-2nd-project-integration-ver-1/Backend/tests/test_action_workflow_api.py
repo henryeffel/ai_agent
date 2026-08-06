@@ -1,8 +1,11 @@
 import os
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi.testclient import TestClient
 
 os.environ["APP_MODE"] = "mock"
@@ -29,6 +32,8 @@ def isolated_database(tmp_path, monkeypatch):
     get_productivity_provider.cache_clear()
     get_session_factory.cache_clear()
     get_engine.cache_clear()
+
+    command.upgrade(Config("alembic.ini"), "head")
 
     yield
 
@@ -113,6 +118,56 @@ def test_approved_plan_executes_once_and_stores_resource_id():
     assert stored["actions"][0]["attempts"] == 1
 
 
+def test_approval_uses_identity_header_not_body_actor():
+    plan = _create_plan()
+
+    response = client.post(
+        f"/api/v1/action-plans/{plan['id']}/approve",
+        json={"actor": "forged@example.com"},
+        headers={
+            "X-Actor-Id": "user-123",
+            "X-Actor-Email": "verified@example.com",
+            "X-Actor-Roles": "approver",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["approved_by"] == "verified@example.com"
+
+
+def test_user_without_approver_role_cannot_approve():
+    plan = _create_plan()
+
+    response = client.post(
+        f"/api/v1/action-plans/{plan['id']}/approve",
+        json={"actor": actor},
+        headers={"X-Actor-Roles": "viewer"},
+    )
+
+    assert response.status_code == 403
+    assert client.get(f"/api/v1/action-plans/{plan['id']}").json()["status"] == "PENDING_APPROVAL"
+
+
+def test_user_without_executor_role_cannot_execute():
+    plan = _create_plan()
+    approved = client.post(
+        f"/api/v1/action-plans/{plan['id']}/approve",
+        json={},
+        headers={"X-Actor-Roles": "approver"},
+    )
+    assert approved.status_code == 200
+
+    response = client.post(
+        f"/api/v1/action-plans/{plan['id']}/execute",
+        headers={"X-Actor-Roles": "viewer"},
+    )
+
+    assert response.status_code == 403
+    stored = client.get(f"/api/v1/action-plans/{plan['id']}").json()
+    assert stored["status"] == "APPROVED"
+    assert stored["actions"][0]["attempts"] == 0
+
+
 def test_partial_failure_is_recorded(monkeypatch):
     monkeypatch.setenv("MOCK_PRODUCTIVITY_SCENARIO", "partial_failure")
     plan = _create_plan([_calendar_action(), _email_action()])
@@ -133,6 +188,49 @@ def test_partial_failure_is_recorded(monkeypatch):
     assert body["actions"][1]["error_code"] == "mock_email_failure"
 
 
+def test_action_logs_include_trace_fields_without_payload():
+    records = []
+
+    class CaptureHandler(logging.Handler):
+        def emit(self, record):
+            records.append(record)
+
+    logger = logging.getLogger("ieum.action")
+    handler = CaptureHandler()
+    logger.addHandler(handler)
+    try:
+        plan = _create_plan([_email_action()])
+        client.post(
+            f"/api/v1/action-plans/{plan['id']}/approve",
+            json={},
+        )
+        response = client.post(
+            f"/api/v1/action-plans/{plan['id']}/execute",
+            headers={"X-Request-ID": "action-trace-1"},
+        )
+    finally:
+        logger.removeHandler(handler)
+
+    assert response.status_code == 200
+    action_records = [
+        record for record in records if hasattr(record, "event_data")
+    ]
+    assert [record.getMessage() for record in action_records] == [
+        "action_execution_started",
+        "action_execution_completed",
+    ]
+    completed = action_records[-1].event_data
+    assert completed["request_id"] == "action-trace-1"
+    assert completed["plan_id"] == plan["id"]
+    assert completed["meeting_id"] == plan["meeting_id"]
+    assert completed["action_id"] == plan["actions"][0]["action_id"]
+    assert completed["provider"] == "mock_microsoft_365"
+    assert completed["tool"] == "email"
+    assert completed["status"] == "SUCCEEDED"
+    assert completed["latency_ms"] >= 0
+    assert "payload" not in completed
+
+
 def test_timeout_marks_plan_and_action_failed(monkeypatch):
     monkeypatch.setenv("MOCK_PRODUCTIVITY_SCENARIO", "timeout")
     plan = _create_plan()
@@ -148,6 +246,40 @@ def test_timeout_marks_plan_and_action_failed(monkeypatch):
     assert body["status"] == "FAILED"
     assert body["actions"][0]["status"] == "FAILED"
     assert body["actions"][0]["error_code"] == "timeout"
+
+
+def test_failed_action_log_contains_safe_error_code(monkeypatch):
+    monkeypatch.setenv("MOCK_PRODUCTIVITY_SCENARIO", "timeout")
+    records = []
+
+    class CaptureHandler(logging.Handler):
+        def emit(self, record):
+            records.append(record)
+
+    logger = logging.getLogger("ieum.action")
+    handler = CaptureHandler()
+    logger.addHandler(handler)
+    try:
+        plan = _create_plan()
+        client.post(f"/api/v1/action-plans/{plan['id']}/approve", json={})
+        response = client.post(
+            f"/api/v1/action-plans/{plan['id']}/execute",
+            headers={"X-Request-ID": "failed-action-trace"},
+        )
+    finally:
+        logger.removeHandler(handler)
+
+    assert response.status_code == 200
+    failed = [
+        record.event_data
+        for record in records
+        if record.getMessage() == "action_execution_failed"
+    ]
+    assert len(failed) == 1
+    assert failed[0]["request_id"] == "failed-action-trace"
+    assert failed[0]["status"] == "FAILED"
+    assert failed[0]["error_code"] == "timeout"
+    assert "error_message" not in failed[0]
 
 
 def test_rejected_plan_cannot_be_approved_or_executed():

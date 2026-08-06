@@ -40,6 +40,7 @@ jobs:
       PRODUCTIVITY_PROVIDER: mock
       EMBEDDING_PROVIDER: mock
       DATABASE_URL: postgresql+psycopg://ieum:ieum_test@localhost:5432/ieum_test
+      IEUM_INTEGRATION_DATABASE: "1"
 
     steps:
       - name: Check out repository

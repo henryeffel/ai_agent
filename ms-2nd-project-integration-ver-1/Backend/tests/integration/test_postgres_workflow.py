@@ -3,13 +3,18 @@ from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
 
-if not os.getenv("DATABASE_URL", "").startswith("postgresql"):
+if (
+    not os.getenv("DATABASE_URL", "").startswith("postgresql")
+    or os.getenv("IEUM_INTEGRATION_DATABASE") != "1"
+):
     pytest.skip(
-        "PostgreSQL DATABASE_URL이 필요한 통합 테스트입니다.",
+        "전용 PostgreSQL DATABASE_URL과 IEUM_INTEGRATION_DATABASE=1이 필요합니다.",
         allow_module_level=True,
     )
 
@@ -21,8 +26,7 @@ os.environ["EMBEDDING_PROVIDER"] = "mock"
 os.environ["MOCK_EMBEDDING_DIMENSION"] = "2048"
 os.environ["VECTOR_SEARCH_PROVIDER"] = "pgvector"
 
-from ieum.database import Base, get_engine, get_session_factory
-from ieum.models import action_plan, knowledge  # noqa: F401, E402
+from ieum.database import get_engine, get_session_factory
 from ieum.providers.embedding.factory import get_embedding_provider
 from ieum.providers.llm.factory import get_llm_provider
 from ieum.providers.productivity.factory import get_productivity_provider
@@ -44,11 +48,9 @@ def clean_postgres_database():
     get_session_factory.cache_clear()
     get_engine.cache_clear()
 
+    command.downgrade(Config("alembic.ini"), "base")
+    command.upgrade(Config("alembic.ini"), "head")
     engine = get_engine()
-    with engine.begin() as connection:
-        connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        Base.metadata.drop_all(connection)
-        Base.metadata.create_all(connection)
 
     yield
 

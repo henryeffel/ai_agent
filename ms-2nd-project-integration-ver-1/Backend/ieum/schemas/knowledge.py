@@ -12,8 +12,10 @@ class DocumentChunkInput(BaseModel):
     content: str = Field(min_length=10, max_length=20_000)
     category: str = Field(default="reference", min_length=1, max_length=50)
     chunk_index: int = Field(ge=0)
+    section: str | None = Field(default=None, max_length=300)
     source_url: str | None = Field(default=None, max_length=2000)
     created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class ChunkIndexRequest(BaseModel):
@@ -43,7 +45,10 @@ class KnowledgeSearchHit(BaseModel):
     content: str
     category: str
     chunk_index: int
+    section: str | None
     source_url: str | None
+    created_at: datetime | None
+    updated_at: datetime | None
     score: float
 
 

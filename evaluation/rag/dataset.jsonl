@@ -1,0 +1,30 @@
+{"type":"document","id":"travel","title":"출장비 규정","category":"policy","text":"# 교통비\n\n국내 출장 교통비는 영수증을 첨부하여 실비로 정산한다.\n\n# 승인\n\n출장비가 10만 원 이상이면 팀장 승인이 필요하다."}
+{"type":"document","id":"meeting-room","title":"회의실 운영 규정","category":"policy","text":"# 예약\n\n회의실 예약은 사내 포털에서 최소 하루 전에 신청한다.\n\n# 취소\n\n사용하지 않는 예약은 시작 두 시간 전에 취소한다."}
+{"type":"document","id":"security","title":"정보보안 지침","category":"security","text":"# 계정\n\n비밀번호는 90일마다 변경하고 다중 인증을 사용한다.\n\n# 사고\n\n보안 사고는 발견 즉시 보안팀에 신고한다."}
+{"type":"document","id":"remote","title":"재택근무 지침","category":"hr","text":"# 신청\n\n재택근무는 근무일 이틀 전까지 팀장에게 신청한다.\n\n# 장비\n\n회사 장비는 승인 없이 외부인에게 대여할 수 없다."}
+{"type":"document","id":"leave","title":"휴가 규정","category":"hr","text":"# 연차\n\n연차는 사내 인사 시스템에서 신청하고 담당 팀장의 승인을 받는다.\n\n# 병가\n\n3일 이상 병가는 진단서를 제출한다."}
+{"type":"document","id":"purchase","title":"구매 승인 규정","category":"finance","text":"# 소액 구매\n\n50만 원 미만 구매는 팀장 승인으로 진행한다.\n\n# 고액 구매\n\n50만 원 이상 구매는 재무팀 검토가 필요하다."}
+{"type":"document","id":"expense","title":"법인카드 지침","category":"finance","text":"# 사용\n\n법인카드는 업무 목적에만 사용한다.\n\n# 정산\n\n사용 영수증은 결제일로부터 7일 이내 제출한다."}
+{"type":"document","id":"release","title":"서비스 배포 절차","category":"engineering","text":"# 승인\n\n운영 배포는 코드 리뷰와 QA 승인을 모두 받아야 한다.\n\n# 복구\n\n장애 발생 시 배포 담당자가 롤백 절차를 수행한다."}
+{"type":"document","id":"incident","title":"장애 대응 지침","category":"engineering","text":"# 등급\n\n서비스 전체 중단은 심각도 1 장애로 분류한다.\n\n# 보고\n\n심각도 1 장애는 30분 안에 관리자에게 보고한다."}
+{"type":"document","id":"retention","title":"문서 보존 정책","category":"compliance","text":"# 회의록\n\n공식 회의록은 3년간 보존한다.\n\n# 계약서\n\n계약서는 종료일 이후 5년간 보존한다."}
+{"type":"query","id":"q01","query":"국내 출장 교통비 영수증 정산","category":"policy","expected_documents":["travel"],"should_ground":true}
+{"type":"query","id":"q02","query":"출장비 10만 원 팀장 승인","category":"policy","expected_documents":["travel"],"should_ground":true}
+{"type":"query","id":"q03","query":"회의실 하루 전 예약","category":"policy","expected_documents":["meeting-room"],"should_ground":true}
+{"type":"query","id":"q04","query":"회의실 예약 취소 두 시간","category":"policy","expected_documents":["meeting-room"],"should_ground":true}
+{"type":"query","id":"q05","query":"비밀번호 90일 다중 인증","category":"security","expected_documents":["security"],"should_ground":true}
+{"type":"query","id":"q06","query":"보안 사고 즉시 신고","category":"security","expected_documents":["security"],"should_ground":true}
+{"type":"query","id":"q07","query":"재택근무 이틀 전 신청","category":"hr","expected_documents":["remote"],"should_ground":true}
+{"type":"query","id":"q08","query":"3일 이상 병가 진단서","category":"hr","expected_documents":["leave"],"should_ground":true}
+{"type":"query","id":"q09","query":"50만 원 이상 구매 재무팀","category":"finance","expected_documents":["purchase"],"should_ground":true}
+{"type":"query","id":"q10","query":"법인카드 영수증 7일","category":"finance","expected_documents":["expense"],"should_ground":true}
+{"type":"query","id":"q11","query":"운영 배포 코드 리뷰 QA 승인","category":"engineering","expected_documents":["release"],"should_ground":true}
+{"type":"query","id":"q12","query":"서비스 전체 중단 심각도 1","category":"engineering","expected_documents":["incident"],"should_ground":true}
+{"type":"query","id":"q13","query":"심각도 1 장애 30분 보고","category":"engineering","expected_documents":["incident"],"should_ground":true}
+{"type":"query","id":"q14","query":"공식 회의록 3년 보존","category":"compliance","expected_documents":["retention"],"should_ground":true}
+{"type":"query","id":"q15","query":"계약서 종료 후 5년","category":"compliance","expected_documents":["retention"],"should_ground":true}
+{"type":"query","id":"q16","query":"사내 카페 무료 음료 정책","category":"welfare","expected_documents":[],"should_ground":false}
+{"type":"query","id":"q17","query":"해외 주재원 주택 지원","category":"hr","expected_documents":[],"should_ground":false}
+{"type":"query","id":"q18","query":"고객 포인트 환불 기준","category":"customer","expected_documents":[],"should_ground":false}
+{"type":"query","id":"q19","query":"회사 차량 주차 할인","category":"welfare","expected_documents":[],"should_ground":false}
+{"type":"query","id":"q20","query":"교육비 자격증 지원 한도","category":"education","expected_documents":[],"should_ground":false}

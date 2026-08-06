@@ -1,8 +1,10 @@
 from functools import lru_cache
+import logging
+import time
 
 from pydantic import TypeAdapter
 
-from ieum.database import get_session_factory, init_database
+from ieum.database import get_session_factory
 from ieum.models.action_plan import ActionPlanModel
 from ieum.providers.productivity import get_productivity_provider
 from ieum.providers.productivity.base import ProductivityProviderError
@@ -21,18 +23,24 @@ from ieum.schemas.productivity import (
     ProductivityPayload,
     TodoPayload,
 )
+from ieum.security.identity import ActorContext
+from ieum.observability import log_event
 
 
 payload_adapter = TypeAdapter(ProductivityPayload)
+action_logger = logging.getLogger("ieum.action")
 
 
 class InsufficientEvidenceError(RuntimeError):
     pass
 
 
+class ActorPermissionError(RuntimeError):
+    pass
+
+
 class ActionWorkflowService:
     def __init__(self):
-        init_database()
         self.session_factory = get_session_factory()
 
     def create_plan(self, request: ActionPlanCreate) -> ActionPlanResponse:
@@ -81,17 +89,26 @@ class ActionWorkflowService:
             plan = ActionPlanRepository(session).get(plan_id)
             return self._to_response(plan)
 
-    def approve_plan(self, plan_id: str, actor: str) -> ActionPlanResponse:
+    def approve_plan(
+        self, plan_id: str, actor: ActorContext
+    ) -> ActionPlanResponse:
+        self._require_role(actor, "approver")
         with self.session_factory() as session:
-            plan = ActionPlanRepository(session).approve(plan_id, actor)
+            plan = ActionPlanRepository(session).approve(plan_id, actor.audit_id)
             return self._to_response(plan)
 
-    def reject_plan(self, plan_id: str, actor: str) -> ActionPlanResponse:
+    def reject_plan(
+        self, plan_id: str, actor: ActorContext
+    ) -> ActionPlanResponse:
+        self._require_role(actor, "approver")
         with self.session_factory() as session:
-            plan = ActionPlanRepository(session).reject(plan_id, actor)
+            plan = ActionPlanRepository(session).reject(plan_id, actor.audit_id)
             return self._to_response(plan)
 
-    def execute_plan(self, plan_id: str) -> ActionPlanResponse:
+    def execute_plan(
+        self, plan_id: str, actor: ActorContext
+    ) -> ActionPlanResponse:
+        self._require_role(actor, "executor")
         provider = get_productivity_provider()
         with self.session_factory() as session:
             repository = ActionPlanRepository(session)
@@ -100,6 +117,17 @@ class ActionWorkflowService:
             for action in plan.actions:
                 repository.mark_action_executing(action.action_id)
                 payload = payload_adapter.validate_python(action.payload)
+                started_at = time.perf_counter()
+                log_event(
+                    action_logger,
+                    "action_execution_started",
+                    plan_id=plan.id,
+                    action_id=action.action_id,
+                    meeting_id=plan.meeting_id,
+                    provider=provider.provider_name,
+                    tool=action.tool,
+                    status="EXECUTING",
+                )
                 try:
                     result = self._execute_tool(
                         provider,
@@ -115,7 +143,25 @@ class ActionWorkflowService:
                         error_code=result.error_code,
                         error_message=result.error_message,
                     )
+                    log_event(
+                        action_logger,
+                        (
+                            "action_execution_completed"
+                            if result.success
+                            else "action_execution_failed"
+                        ),
+                        level=(logging.INFO if result.success else logging.ERROR),
+                        plan_id=plan.id,
+                        action_id=action.action_id,
+                        meeting_id=plan.meeting_id,
+                        provider=result.provider,
+                        tool=action.tool,
+                        status="SUCCEEDED" if result.success else "FAILED",
+                        latency_ms=result.latency_ms,
+                        error_code=result.error_code,
+                    )
                 except ProductivityProviderError as exc:
+                    latency_ms = max(1, int((time.perf_counter() - started_at) * 1000))
                     repository.complete_action(
                         action.action_id,
                         success=False,
@@ -123,7 +169,21 @@ class ActionWorkflowService:
                         error_code=exc.code,
                         error_message=exc.message,
                     )
+                    log_event(
+                        action_logger,
+                        "action_execution_failed",
+                        level=logging.ERROR,
+                        plan_id=plan.id,
+                        action_id=action.action_id,
+                        meeting_id=plan.meeting_id,
+                        provider=provider.provider_name,
+                        tool=action.tool,
+                        status="FAILED",
+                        latency_ms=latency_ms,
+                        error_code=exc.code,
+                    )
                 except Exception:
+                    latency_ms = max(1, int((time.perf_counter() - started_at) * 1000))
                     repository.complete_action(
                         action.action_id,
                         success=False,
@@ -131,8 +191,28 @@ class ActionWorkflowService:
                         error_code="internal_error",
                         error_message="Tool 실행 중 내부 오류가 발생했습니다.",
                     )
+                    log_event(
+                        action_logger,
+                        "action_execution_failed",
+                        level=logging.ERROR,
+                        plan_id=plan.id,
+                        action_id=action.action_id,
+                        meeting_id=plan.meeting_id,
+                        provider=provider.provider_name,
+                        tool=action.tool,
+                        status="FAILED",
+                        latency_ms=latency_ms,
+                        error_code="internal_error",
+                    )
 
             return self._to_response(repository.finish_plan(plan_id))
+
+    @staticmethod
+    def _require_role(actor: ActorContext, role: str) -> None:
+        if not actor.has_role(role):
+            raise ActorPermissionError(
+                f"요청한 작업에는 {role} 역할이 필요합니다."
+            )
 
     @staticmethod
     def _execute_tool(provider, action_id, payload):

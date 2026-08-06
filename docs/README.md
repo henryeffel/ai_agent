@@ -4,6 +4,13 @@
 
 ## 문서
 
+- [작업 종합 요약](./work-summary.md)
+- [구현 진행 기록](./implementation-progress.md)
+- [Agentic Coding 사례](./agentic-development-case-study.md)
+- [재현 가능한 데모](./demo.md)
+- [Copilot Studio 연동 준비](./copilot-studio-integration.md)
+- [Microsoft Graph Provider](./microsoft-graph-provider.md)
+- [공개 데모 배포 계획](./open-demo-deployment-plan.md)
 - [포트폴리오 개발 계획](./portfolio-development-plan.md)
 - [개발 작업 로그](./development-log.md)
 - [현재 개발 현황](./current-status.md)

@@ -1,0 +1,118 @@
+{
+  "pipeline": "baseline",
+  "dataset": {
+    "documents": 10,
+    "queries": 20
+  },
+  "chunk_count": 10,
+  "metrics": {
+    "recall_at_3": 1.0,
+    "evidence_hit_rate": 1.0,
+    "grounded_decision_accuracy": 0.75,
+    "insufficient_evidence_rejection_rate": 0.0,
+    "average_search_latency_ms": 0.0787
+  },
+  "failure_count": 5,
+  "failures": [
+    {
+      "query_id": "q16",
+      "returned": [
+        {
+          "document_id": "meeting-room",
+          "score": 0.2
+        },
+        {
+          "document_id": "leave",
+          "score": 0.2
+        },
+        {
+          "document_id": "travel",
+          "score": 0.0
+        }
+      ],
+      "expected": [],
+      "should_ground": false
+    },
+    {
+      "query_id": "q17",
+      "returned": [
+        {
+          "document_id": "travel",
+          "score": 0.0
+        },
+        {
+          "document_id": "meeting-room",
+          "score": 0.0
+        },
+        {
+          "document_id": "security",
+          "score": 0.0
+        }
+      ],
+      "expected": [],
+      "should_ground": false
+    },
+    {
+      "query_id": "q18",
+      "returned": [
+        {
+          "document_id": "travel",
+          "score": 0.0
+        },
+        {
+          "document_id": "meeting-room",
+          "score": 0.0
+        },
+        {
+          "document_id": "security",
+          "score": 0.0
+        }
+      ],
+      "expected": [],
+      "should_ground": false
+    },
+    {
+      "query_id": "q19",
+      "returned": [
+        {
+          "document_id": "remote",
+          "score": 0.25
+        },
+        {
+          "document_id": "travel",
+          "score": 0.0
+        },
+        {
+          "document_id": "meeting-room",
+          "score": 0.0
+        }
+      ],
+      "expected": [],
+      "should_ground": false
+    },
+    {
+      "query_id": "q20",
+      "returned": [
+        {
+          "document_id": "travel",
+          "score": 0.0
+        },
+        {
+          "document_id": "meeting-room",
+          "score": 0.0
+        },
+        {
+          "document_id": "security",
+          "score": 0.0
+        }
+      ],
+      "expected": [],
+      "should_ground": false
+    }
+  ],
+  "limitations": [
+    "Small synthetic Korean policy dataset; results are not production quality claims.",
+    "Lexical overlap evaluator does not measure embedding model quality.",
+    "Latency excludes network, database, and embedding generation time."
+  ]
+}

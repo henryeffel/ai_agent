@@ -1,6 +1,8 @@
 import os
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi.testclient import TestClient
 
 os.environ["APP_MODE"] = "mock"
@@ -31,6 +33,8 @@ def isolated_dependencies(tmp_path, monkeypatch):
     get_llm_provider.cache_clear()
     get_session_factory.cache_clear()
     get_engine.cache_clear()
+
+    command.upgrade(Config("alembic.ini"), "head")
 
     yield
 
@@ -113,4 +117,5 @@ def test_grounded_plan_rejects_when_evidence_is_insufficient():
     )
 
     assert response.status_code == 422
-    assert "근거가 부족" in response.json()["detail"]
+    assert response.json()["error"]["code"] == "insufficient_evidence"
+    assert "근거가 부족" in response.json()["error"]["message"]

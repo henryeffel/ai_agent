@@ -20,8 +20,13 @@ class DocumentChunkModel(Base):
     content: Mapped[str] = mapped_column(Text)
     category: Mapped[str] = mapped_column(String(50), index=True)
     chunk_index: Mapped[int]
+    section: Mapped[str | None] = mapped_column(String(300), nullable=True)
     source_url: Mapped[str | None] = mapped_column(String(2000), nullable=True)
     document_created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    document_updated_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )
