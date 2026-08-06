@@ -1,5 +1,16 @@
 # IEUM 구현 진행 기록
 
+## 공개 배포 완료 (2026-08-06)
+
+- [x] Supabase PostgreSQL + pgvector migration 및 Demo seed
+- [x] Render FastAPI 배포: `https://ieum-api-sgqw.onrender.com`
+- [x] Vercel React 배포: `https://ai-agent-olive-nine.vercel.app`
+- [x] Production CORS 검증
+- [x] 공개 API Plan 생성 → 승인 → Mock 실행 검증
+- [x] 최종 Backend 테스트 `75 passed, 1 skipped`
+
+상세 장애 원인과 최종 검증 결과는 [`deployment-verification.md`](./deployment-verification.md)에 기록했다.
+
 기준일: 2026-08-06
 
 ## Baseline
