@@ -56,3 +56,15 @@ def test_analysis_reports_only_safe_validation_locations():
 
     assert "secret_payload:extra_forbidden" in str(caught.value)
     assert "do-not-echo" not in str(caught.value)
+
+
+def test_analysis_uses_grounded_transcript_when_summary_is_empty():
+    transcript = "부산 출장을 진행하고 교통편을 금요일까지 예약합니다."
+    provider = _provider_with_response(
+        '{"summary":"","decisions":["부산 출장"],'
+        '"action_items":[],"open_issues":[]}'
+    )
+
+    result = provider.analyze_meeting(transcript)
+
+    assert result.summary == transcript
