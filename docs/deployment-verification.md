@@ -48,6 +48,39 @@ azure_providers_loaded=false
 
 Nemotron 응답의 reasoning wrapper나 설명이 JSON 앞에 붙어도 첫 완전한 JSON 객체 또는 배열을 안전하게 추출하도록 parser를 보강했다. 추출 이후의 Pydantic `MeetingAnalysis`와 `ActionCreate` 검증은 그대로 유지하므로 schema 불일치 결과를 실행 단계로 전달하지 않는다. 관련 회귀 테스트 추가 후 로컬 Backend 결과는 `77 passed, 1 skipped`다.
 
+### 최종 복구 및 E2E
+
+안전한 Pydantic 오류 위치만 추가 확인한 결과 간헐적 실패 필드는 `summary:string_too_short`였다. summary만 비어 있을 때 사용자 입력 Transcript를 기존 최대 길이인 3,000자로 제한해 사용하는 fallback을 적용했다. 다른 필드와 Action schema의 엄격한 검증은 유지한다.
+
+공개 Knowledge Search에서 기본 출장 샘플의 Top 1은 다음과 같았다.
+
+```text
+title: 출장비 규정
+category: policy
+source: travel-policy.md
+section: 승인
+similarity: 0.0498
+```
+
+운영 embedding 점수가 기존 `0.2` threshold보다 낮아 올바른 근거도 제거되고 있었다. 기본 데모를 `category=policy`, `top_k=1`, `min_score=0.04`로 최소 조정한 후 공개 E2E가 완료됐다.
+
+```text
+POST /api/v1/action-plans/grounded → PENDING_APPROVAL
+POST /api/v1/action-plans/{id}/approve → APPROVED
+POST /api/v1/action-plans/{id}/execute → SUCCEEDED
+```
+
+최종 실행 결과:
+
+- Evidence: 출장비 규정, `travel-policy.md`
+- Tool: To-do
+- Provider: `mock_microsoft_365`
+- attempts: `1`
+- Mock resource ID 생성 확인
+- 실제 Microsoft 365 외부 부작용 없음
+
+이 검증으로 P0 네 Gate를 완료했으며 이후에는 버그 수정과 문서 수정 외 기능을 추가하지 않는다.
+
 기준일: 2026-08-06
 
 ## 최종 배포 환경

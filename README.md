@@ -21,7 +21,7 @@
   <img src="https://img.shields.io/badge/React-Vite-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Vite">
   <img src="https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL pgvector">
   <img src="https://img.shields.io/badge/NVIDIA-NIM-76B900?style=flat-square&logo=nvidia&logoColor=white" alt="NVIDIA NIM">
-  <img src="https://img.shields.io/badge/pytest-75%20passed-0A9EDC?style=flat-square&logo=pytest&logoColor=white" alt="pytest 75 passed">
+  <img src="https://img.shields.io/badge/pytest-79%20passed-0A9EDC?style=flat-square&logo=pytest&logoColor=white" alt="pytest 79 passed">
   <a href="https://github.com/henryeffel/ai_agent/actions/workflows/backend-ci.yml"><img src="https://github.com/henryeffel/ai_agent/actions/workflows/backend-ci.yml/badge.svg" alt="Backend CI"></a>
 </p>
 
@@ -62,7 +62,7 @@ Meeting Transcript
 | 부분 실패 | 도구별 상태 저장 및 `PARTIALLY_SUCCEEDED` 구분 |
 | Provider 경계 | Mock, Logic Apps, Microsoft Graph 구현체 분리 |
 | 운영 모드 | Demo에서 Legacy Azure route와 실제 Productivity Provider 차단 |
-| 자동 검증 | Backend `75 passed, 1 skipped`, Frontend production build 통과 |
+| 자동 검증 | Backend `79 passed, 1 skipped`, Frontend production build 통과 |
 | 관측성 | `X-Request-ID`와 payload 비저장 구조화 로그 |
 
 > PostgreSQL 통합 테스트 1건은 전용 DB를 명시적으로 지정해야 실행되는 보호된

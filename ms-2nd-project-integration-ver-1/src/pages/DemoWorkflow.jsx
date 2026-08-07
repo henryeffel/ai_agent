@@ -31,7 +31,7 @@ export default function DemoWorkflow() {
   };
 
   const createPlan = () => run("Action Plan 생성", () => createGroundedPlanWithRetry(
-    { meeting_id: `web-${Date.now()}`, transcript, top_k: 3, min_score: 0.2 },
+    { meeting_id: `web-${Date.now()}`, transcript, category: "policy", top_k: 1, min_score: 0.04 },
     () => setRetrying(true),
   ));
   const approvePlan = () => run("사용자 승인", () => apiRequest(`/api/v1/action-plans/${plan.id}/approve`, { method: "POST", body: "{}" }));
