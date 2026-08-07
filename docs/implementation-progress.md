@@ -11,7 +11,7 @@
 - [x] Render cold start 안내와 계획 생성 전용 1회 재시도 추가
 - [x] 재시도 상태와 요청 중 버튼 잠금 표시
 - [x] 승인·실행 요청은 자동 재시도하지 않도록 유지
-- [x] Backend `75 passed, 1 skipped`, Python compile, Frontend production build 통과
+- [x] Backend `79 passed, 1 skipped`, Python compile, Frontend production build 통과
 
 실제 NVIDIA embedding을 사용한 Top 1~3 검색 품질, PostgreSQL 통합 테스트와 공개 URL E2E는 변경 배포 후 확인한다. 전체 Gate와 feature freeze 조건은 [`p0-release-checklist.md`](./p0-release-checklist.md)에 기록했다.
 

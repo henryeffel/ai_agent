@@ -34,8 +34,8 @@ Skip 1건은 전용 PostgreSQL DB를 지정해야 실행되는 보호된 통합 
 - [x] 기존 Seed 문서와 Chunk 내용 확인
 - [x] Seed가 하나의 가상 기업 지식베이스를 구성하는지 확인
 - [x] 1~2개 규정을 자연스럽게 요구하는 기본 회의록 작성
-- [ ] 기본 샘플의 실제 Top 1~3 검색 결과 확인
-- [ ] 관련 없는 문서가 상위에 나오면 샘플·Chunk·검색 조건만 최소 조정
+- [x] 기본 샘플의 실제 Top 1~3 검색 결과 확인
+- [x] 관련 없는 문서가 상위에 나오면 샘플·Chunk·검색 조건만 최소 조정
 - [x] pgvector score가 cosine distance가 아니라 `1 - cosine_distance`인 similarity임을 확인
 - [x] API와 UI에서 `similarity_score` 명칭 사용
 
@@ -69,11 +69,11 @@ Skip 1건은 전용 PostgreSQL DB를 지정해야 실행되는 보호된 통합 
 - [x] PostgreSQL·pgvector 통합 테스트 또는 CI 결과 확인
 - [x] Frontend production build
 - [x] 공개 환경 readiness 확인
-- [ ] 공개 URL에서 전체 Agent Workflow 검증
+- [x] 공개 URL에서 전체 Agent Workflow 검증
 - [x] 근거 카드와 재시도 UX 확인
 - [x] README의 기능·테스트 수치·제한사항 갱신
 - [x] 배포 검증 문서에 최종 E2E 결과 기록
-- [ ] P0 완료 시 feature freeze 선언
+- [x] P0 완료 시 feature freeze 선언
 
 완료 조건:
 
@@ -102,3 +102,14 @@ Gate 4 완료 이후에는 버그 수정과 문서 수정 외 기능을 추가�
 - `502` 응답 본문으로 NVIDIA 분석 결과가 `MeetingAnalysis` schema를 충족하지 못한 것을 확인했다.
 - Reasoning wrapper 뒤의 첫 완전한 JSON 객체·배열만 추출하고 기존 Pydantic schema 검증은 유지하도록 수정했다.
 - wrapper 허용과 유효 JSON 부재 거부 테스트를 추가했으며 Backend 결과는 `77 passed, 1 skipped`다.
+
+### 2026-08-07 최종 P0 검증
+
+- 안전한 validation detail로 간헐적 실패 원인이 `summary:string_too_short`임을 확인했다.
+- summary만 비어 있으면 입력 Transcript를 최대 3,000자로 사용하는 원문 기반 fallback을 적용했다.
+- 로컬 Backend 결과는 `79 passed, 1 skipped`다.
+- 공개 pgvector에서 기본 샘플의 Top 1은 `출장비 규정`이었다.
+- 공개 점수 `0.0498`을 기준으로 기본 Demo 요청을 `category=policy`, `top_k=1`, `min_score=0.04`로 조정했다.
+- 공개 Workflow가 `PENDING_APPROVAL → APPROVED → SUCCEEDED`로 완료됐다.
+- Mock To-do는 `attempts=1`, Provider `mock_microsoft_365`, Mock resource ID를 반환했다.
+- P0 네 Gate가 모두 완료되어 feature freeze를 선언한다.
