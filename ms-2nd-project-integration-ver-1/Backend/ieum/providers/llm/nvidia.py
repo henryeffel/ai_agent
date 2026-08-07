@@ -73,9 +73,14 @@ class NvidiaLLMProvider(LLMProvider):
         try:
             payload = self._load_json_value(content, dict)
             return MeetingAnalysis.model_validate(payload)
-        except (json.JSONDecodeError, ValidationError) as exc:
+        except json.JSONDecodeError as exc:
             raise LLMProviderError(
-                "LLM 응답이 MeetingAnalysis Schema를 충족하지 않습니다."
+                "LLM 응답에서 MeetingAnalysis JSON 객체를 찾지 못했습니다."
+            ) from exc
+        except ValidationError as exc:
+            raise LLMProviderError(
+                "LLM 응답이 MeetingAnalysis Schema를 충족하지 않습니다. "
+                f"({_validation_summary(exc)})"
             ) from exc
 
     def generate_grounded_actions(
@@ -112,9 +117,14 @@ class NvidiaLLMProvider(LLMProvider):
         try:
             payload = self._load_json_value(content, list)
             return TypeAdapter(list[ActionCreate]).validate_python(payload)
-        except (json.JSONDecodeError, ValidationError) as exc:
+        except json.JSONDecodeError as exc:
             raise LLMProviderError(
-                "LLM 응답이 Action Plan Schema를 충족하지 않습니다."
+                "LLM 응답에서 Action Plan JSON 배열을 찾지 못했습니다."
+            ) from exc
+        except ValidationError as exc:
+            raise LLMProviderError(
+                "LLM 응답이 Action Plan Schema를 충족하지 않습니다. "
+                f"({_validation_summary(exc)})"
             ) from exc
 
     @staticmethod
@@ -222,3 +232,11 @@ class NvidiaLLMProvider(LLMProvider):
 - 회의 분석과 검색 근거 양쪽에서 확인되지 않는 작업은 만들지 마세요.
 - 최소 1개, 최대 50개의 작업만 반환하세요.
 """.strip()
+
+
+def _validation_summary(exc: ValidationError) -> str:
+    """Return field locations and error types without echoing model content."""
+    return ", ".join(
+        f"{'.'.join(str(part) for part in error['loc']) or 'root'}:{error['type']}"
+        for error in exc.errors(include_url=False, include_context=False, include_input=False)
+    )
