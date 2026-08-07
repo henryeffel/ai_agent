@@ -92,12 +92,25 @@ def test_grounded_plan_stores_evidence_chunk_ids():
     body = response.json()
     assert body["status"] == "PENDING_APPROVAL"
     assert body["evidence_chunk_ids"] == ["marketing-budget-1"]
+    assert body["evidence"] == [
+        {
+            "chunk_id": "marketing-budget-1",
+            "document_id": "marketing-policy",
+            "title": "마케팅 예산 승인 회의",
+            "category": "history",
+            "source": "mock://marketing-budget",
+            "excerpt": "신제품 마케팅 광고 예산을 검토하고 후속 작업을 할 일 목록으로 관리합니다.",
+            "similarity_score": body["evidence"][0]["similarity_score"],
+        }
+    ]
+    assert body["evidence"][0]["similarity_score"] > 0.1
     assert body["actions"]
     assert body["actions"][0]["tool"] == "todo"
 
     stored = client.get(f"/api/v1/action-plans/{body['id']}")
     assert stored.status_code == 200
     assert stored.json()["evidence_chunk_ids"] == ["marketing-budget-1"]
+    assert stored.json()["evidence"] == body["evidence"]
 
 
 def test_grounded_plan_rejects_when_evidence_is_insufficient():

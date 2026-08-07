@@ -20,6 +20,7 @@ class ActionPlanModel(Base):
         default=list,
         nullable=False,
     )
+    evidence: Mapped[list[dict]] = mapped_column(JSON, default=list, nullable=False)
     status: Mapped[str] = mapped_column(String(40), index=True)
     approved_by: Mapped[str | None] = mapped_column(String(320), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(

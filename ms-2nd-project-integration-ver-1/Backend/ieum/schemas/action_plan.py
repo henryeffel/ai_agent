@@ -6,6 +6,16 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from ieum.schemas.productivity import ProductivityPayload, ToolType
 
 
+class EvidenceDetail(BaseModel):
+    chunk_id: str
+    document_id: str
+    title: str
+    category: str
+    source: str | None
+    excerpt: str
+    similarity_score: float
+
+
 class ActionPlanStatus(str, Enum):
     PENDING_APPROVAL = "PENDING_APPROVAL"
     APPROVED = "APPROVED"
@@ -38,6 +48,7 @@ class ActionPlanCreate(BaseModel):
         default_factory=list,
         max_length=20,
     )
+    evidence: list[EvidenceDetail] = Field(default_factory=list, max_length=20)
     actions: list[ActionCreate] = Field(min_length=1, max_length=50)
 
 
@@ -77,6 +88,7 @@ class ActionPlanResponse(BaseModel):
     id: str
     meeting_id: str
     evidence_chunk_ids: list[str]
+    evidence: list[EvidenceDetail]
     status: ActionPlanStatus
     approved_by: str | None
     approved_at: datetime | None

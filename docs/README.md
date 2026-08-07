@@ -6,6 +6,7 @@
 
 ## 문서
 
+- [P0 제출 전 Release Checklist](./p0-release-checklist.md)
 - [작업 종합 요약](./work-summary.md)
 - [구현 진행 기록](./implementation-progress.md)
 - [Agentic Coding 사례](./agentic-development-case-study.md)

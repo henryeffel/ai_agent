@@ -27,7 +27,9 @@ class DemoMaintenanceService:
                         document_id=document["document_id"],
                         title=document["title"],
                         category=document["category"],
-                        source_url=f"demo://{document['document_id']}",
+                        source_url=document.get(
+                            "source_url", f"demo://{document['document_id']}"
+                        ),
                         updated_at=document.get("updated_at"),
                     ),
                     max_chars=800,

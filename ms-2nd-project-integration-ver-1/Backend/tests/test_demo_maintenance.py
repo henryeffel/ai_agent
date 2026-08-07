@@ -23,10 +23,13 @@ def test_seed_is_idempotent_and_contains_stable_demo_metadata():
     assert set(provider._chunks) == first_ids
     assert len(provider._chunks) == 10
     assert all(chunk_id.startswith("demo-") for chunk_id in first_ids)
-    assert all(
-        chunk.source_url.startswith("demo://")
-        for chunk, vector in provider._chunks.values()
-    )
+    assert {chunk.source_url for chunk, vector in provider._chunks.values()} == {
+        "travel-policy.md",
+        "meeting-room-policy.md",
+        "security-policy.md",
+        "purchase-policy.md",
+        "release-policy.md",
+    }
 
 
 def test_cleanup_deletes_only_expired_demo_plans(tmp_path, monkeypatch):
@@ -67,6 +70,7 @@ def _plan(plan_id, meeting_id, created_at):
         id=plan_id,
         meeting_id=meeting_id,
         evidence_chunk_ids=[],
+        evidence=[],
         status="PENDING_APPROVAL",
         created_at=created_at,
         updated_at=created_at,
