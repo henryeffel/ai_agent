@@ -71,7 +71,7 @@ class NvidiaLLMProvider(LLMProvider):
             raise LLMProviderError("LLM이 분석 결과를 반환하지 않았습니다.")
 
         try:
-            payload = json.loads(self._strip_code_fence(content))
+            payload = self._load_json_value(content, dict)
             return MeetingAnalysis.model_validate(payload)
         except (json.JSONDecodeError, ValidationError) as exc:
             raise LLMProviderError(
@@ -110,7 +110,7 @@ class NvidiaLLMProvider(LLMProvider):
         if not content:
             raise LLMProviderError("LLM이 실행 계획을 반환하지 않았습니다.")
         try:
-            payload = json.loads(self._strip_code_fence(content))
+            payload = self._load_json_value(content, list)
             return TypeAdapter(list[ActionCreate]).validate_python(payload)
         except (json.JSONDecodeError, ValidationError) as exc:
             raise LLMProviderError(
@@ -126,6 +126,30 @@ class NvidiaLLMProvider(LLMProvider):
             flags=re.DOTALL | re.IGNORECASE,
         )
         return match.group(1) if match else stripped
+
+    @classmethod
+    def _load_json_value(cls, content: str, expected_type: type):
+        """Decode the first complete JSON value, ignoring model reasoning wrappers."""
+        stripped = cls._strip_code_fence(content)
+        try:
+            payload = json.loads(stripped)
+            if isinstance(payload, expected_type):
+                return payload
+        except json.JSONDecodeError:
+            pass
+
+        opener = "{" if expected_type is dict else "["
+        decoder = json.JSONDecoder()
+        for index, character in enumerate(stripped):
+            if character != opener:
+                continue
+            try:
+                payload, _ = decoder.raw_decode(stripped[index:])
+            except json.JSONDecodeError:
+                continue
+            if isinstance(payload, expected_type):
+                return payload
+        raise json.JSONDecodeError("Expected JSON value not found", stripped, 0)
 
     @staticmethod
     def _build_prompt(transcript: str) -> str:

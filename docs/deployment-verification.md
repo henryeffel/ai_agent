@@ -34,6 +34,20 @@ azure_providers_loaded=false
 
 따라서 이번 변경의 배포와 API schema 반영은 확인했지만, 실제 Evidence Top 1~3와 `PENDING_APPROVAL → APPROVED → SUCCEEDED` 전체 흐름은 아직 재검증되지 않았다. 반복적인 NVIDIA upstream 오류의 원인을 확인한 후 제한적 재검증이 필요하다.
 
+오류 응답을 추가 확인한 결과:
+
+```json
+{
+  "error": {
+    "code": "llm_invalid_response",
+    "message": "LLM 응답이 MeetingAnalysis Schema를 충족하지 않습니다.",
+    "retryable": true
+  }
+}
+```
+
+Nemotron 응답의 reasoning wrapper나 설명이 JSON 앞에 붙어도 첫 완전한 JSON 객체 또는 배열을 안전하게 추출하도록 parser를 보강했다. 추출 이후의 Pydantic `MeetingAnalysis`와 `ActionCreate` 검증은 그대로 유지하므로 schema 불일치 결과를 실행 단계로 전달하지 않는다. 관련 회귀 테스트 추가 후 로컬 Backend 결과는 `77 passed, 1 skipped`다.
+
 기준일: 2026-08-06
 
 ## 최종 배포 환경

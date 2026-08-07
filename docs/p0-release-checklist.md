@@ -99,3 +99,6 @@ Gate 4 완료 이후에는 버그 수정과 문서 수정 외 기능을 추가�
 - 공개 계획 생성은 최초 요청과 허용된 1회 재시도 모두 NVIDIA upstream `502`로 실패했다.
 - 계획이 생성되지 않았으므로 승인·실행 API는 호출하지 않았다.
 - 실제 Top 1~3와 전체 공개 E2E가 완료되지 않아 feature freeze는 선언하지 않는다.
+- `502` 응답 본문으로 NVIDIA 분석 결과가 `MeetingAnalysis` schema를 충족하지 못한 것을 확인했다.
+- Reasoning wrapper 뒤의 첫 완전한 JSON 객체·배열만 추출하고 기존 Pydantic schema 검증은 유지하도록 수정했다.
+- wrapper 허용과 유효 JSON 부재 거부 테스트를 추가했으며 Backend 결과는 `77 passed, 1 skipped`다.
