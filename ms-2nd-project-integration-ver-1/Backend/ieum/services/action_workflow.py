@@ -15,6 +15,7 @@ from ieum.schemas.action_plan import (
     ActionExecutionResponse,
     ActionPlanCreate,
     ActionPlanResponse,
+    EvidenceDetail,
     GroundedActionPlanCreate,
 )
 from ieum.schemas.productivity import (
@@ -80,6 +81,18 @@ class ActionWorkflowService:
             ActionPlanCreate(
                 meeting_id=request.meeting_id,
                 evidence_chunk_ids=[hit.chunk_id for hit in hits],
+                evidence=[
+                    EvidenceDetail(
+                        chunk_id=hit.chunk_id,
+                        document_id=hit.document_id,
+                        title=hit.title,
+                        category=hit.category,
+                        source=hit.source_url,
+                        excerpt=hit.content,
+                        similarity_score=hit.score,
+                    )
+                    for hit in hits
+                ],
                 actions=actions,
             )
         )
@@ -230,6 +243,7 @@ class ActionWorkflowService:
             id=plan.id,
             meeting_id=plan.meeting_id,
             evidence_chunk_ids=plan.evidence_chunk_ids,
+            evidence=plan.evidence,
             status=plan.status,
             approved_by=plan.approved_by,
             approved_at=plan.approved_at,

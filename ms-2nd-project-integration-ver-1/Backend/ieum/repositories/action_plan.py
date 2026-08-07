@@ -34,6 +34,7 @@ class ActionPlanRepository:
             id=str(uuid4()),
             meeting_id=request.meeting_id,
             evidence_chunk_ids=request.evidence_chunk_ids,
+            evidence=[item.model_dump(mode="json") for item in request.evidence],
             status=ActionPlanStatus.PENDING_APPROVAL.value,
         )
         for item in request.actions:

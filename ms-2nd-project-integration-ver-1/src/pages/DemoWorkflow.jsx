@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import { Alert, AlertIcon, Badge, Box, Button, Code, Heading, HStack, List, ListItem, SimpleGrid, Text, Textarea, VStack, useToast } from "@chakra-ui/react";
 import { FiCheck, FiPlay, FiSearch } from "react-icons/fi";
 import Card from "../components/Card";
-import { apiRequest } from "../lib/api";
+import { apiRequest, createGroundedPlanWithRetry } from "../lib/api";
 
-const SAMPLE_TRANSCRIPT = "마케팅 캠페인 성과 회의입니다. 지난 캠페인의 전환율을 검토했고 다음 캠페인 예산안을 금요일까지 작성하기로 결정했습니다. 담당자는 캠페인 결과 보고서를 준비하고 다음 주에 후속 회의를 진행합니다.";
+const SAMPLE_TRANSCRIPT = "다음 주 수요일 고객사 부산 방문을 진행하기로 했습니다. 교통편 예약과 출장비 정산 준비는 금요일까지 완료합니다. 예상 출장비가 10만 원 이상이므로 사내 규정에 따른 팀장 승인도 요청하기로 했습니다.";
 const statusColors = { PENDING_APPROVAL: "orange", APPROVED: "blue", SUCCEEDED: "green", PARTIALLY_SUCCEEDED: "yellow", FAILED: "red" };
 
 export default function DemoWorkflow() {
   const [transcript, setTranscript] = useState(SAMPLE_TRANSCRIPT);
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState("");
+  const [retrying, setRetrying] = useState(false);
   const toast = useToast();
 
   const run = async (label, operation) => {
@@ -19,16 +20,20 @@ export default function DemoWorkflow() {
       const result = await operation();
       setPlan(result);
     } catch (error) {
-      toast({ title: `${label} 실패`, description: error.message, status: "error", duration: 6000, isClosable: true });
+      const nextAction = label === "Action Plan 생성"
+        ? " 잠시 후 생성 버튼을 다시 눌러 주세요."
+        : " 현재 계획 상태를 확인한 뒤 다시 시도해 주세요.";
+      toast({ title: `${label} 실패`, description: `${error.message}${nextAction}`, status: "error", duration: 8000, isClosable: true });
     } finally {
       setLoading("");
+      setRetrying(false);
     }
   };
 
-  const createPlan = () => run("Action Plan 생성", () => apiRequest("/api/v1/action-plans/grounded", {
-    method: "POST",
-    body: JSON.stringify({ meeting_id: `web-${Date.now()}`, transcript, top_k: 3, min_score: 0.1 }),
-  }));
+  const createPlan = () => run("Action Plan 생성", () => createGroundedPlanWithRetry(
+    { meeting_id: `web-${Date.now()}`, transcript, top_k: 3, min_score: 0.2 },
+    () => setRetrying(true),
+  ));
   const approvePlan = () => run("사용자 승인", () => apiRequest(`/api/v1/action-plans/${plan.id}/approve`, { method: "POST", body: "{}" }));
   const executePlan = () => run("Mock Microsoft 365 실행", () => apiRequest(`/api/v1/action-plans/${plan.id}/execute`, { method: "POST" }));
 
@@ -40,6 +45,8 @@ export default function DemoWorkflow() {
         <Text mt={2} color="gray.600">회의록을 사내 지식과 연결하고, 사용자 승인 후에만 Microsoft 365 작업을 Mock으로 실행합니다.</Text>
       </Box>
       <Alert status="info" borderRadius="lg"><AlertIcon />공개 데모에서는 실제 메일·일정·할 일을 만들지 않습니다.</Alert>
+      <Alert status="warning" borderRadius="lg"><AlertIcon />무료 서버를 시작하는 첫 요청은 최대 60초 정도 걸릴 수 있습니다. 일시적인 AI 오류는 계획 생성에 한해 한 번만 자동 재시도합니다.</Alert>
+      {retrying && <Alert status="info" borderRadius="lg"><AlertIcon />AI 응답이 일시적으로 불안정해 계획 생성을 한 번 다시 시도하고 있습니다.</Alert>}
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
         <Card>
           <Heading size="md" mb={3}>1. 회의록 입력</Heading>
@@ -55,7 +62,26 @@ export default function DemoWorkflow() {
           </HStack>
           {!plan ? <Text color="gray.500">분석 결과와 실행 계획이 여기에 표시됩니다.</Text> : (
             <VStack align="stretch" spacing={4}>
-              <Box><Text fontWeight="bold">사용한 근거</Text><Text fontSize="sm" color="gray.600">{plan.evidence_chunk_ids.join(", ") || "근거 없음"}</Text></Box>
+              <Box>
+                <Text fontWeight="bold" mb={2}>사용한 근거</Text>
+                {plan.evidence?.length ? (
+                  <VStack align="stretch" spacing={2}>
+                    {plan.evidence.map((item) => (
+                      <Box key={item.chunk_id} p={3} borderWidth="1px" borderRadius="md" bg="purple.50">
+                        <HStack justify="space-between" align="start">
+                          <Text fontWeight="semibold">{item.title}</Text>
+                          <Badge colorScheme="purple">Similarity {item.similarity_score.toFixed(2)}</Badge>
+                        </HStack>
+                        <Text mt={2} fontSize="sm" noOfLines={3}>{item.excerpt}</Text>
+                        <HStack mt={2} spacing={3} color="gray.600" fontSize="xs">
+                          <Text>Category: {item.category}</Text>
+                          <Text>Source: {item.source || item.document_id}</Text>
+                        </HStack>
+                      </Box>
+                    ))}
+                  </VStack>
+                ) : <Text fontSize="sm" color="gray.600">표시할 근거가 없습니다.</Text>}
+              </Box>
               <Box>
                 <Text fontWeight="bold" mb={2}>제안된 작업</Text>
                 <List spacing={2}>{plan.actions.map((action) => (

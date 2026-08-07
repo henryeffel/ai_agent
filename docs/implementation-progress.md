@@ -1,5 +1,20 @@
 # IEUM 구현 진행 기록
 
+## P0 제출 전 데모 완성도 개선 (2026-08-07)
+
+- [x] 기본 회의록을 출장비·팀장 승인 규정과 자연스럽게 연결되는 내용으로 교체
+- [x] Seed 문서에 사용자가 읽을 수 있는 Markdown 출처명 추가
+- [x] pgvector의 `1 - cosine_distance` 값을 `similarity_score`로 명시
+- [x] Action Plan에 문서명·카테고리·출처·본문·similarity 근거 상세 영속화
+- [x] 기존 `evidence_chunk_ids` 응답 호환성 유지
+- [x] 프런트 Chunk ID 출력을 간결한 Evidence 카드로 교체
+- [x] Render cold start 안내와 계획 생성 전용 1회 재시도 추가
+- [x] 재시도 상태와 요청 중 버튼 잠금 표시
+- [x] 승인·실행 요청은 자동 재시도하지 않도록 유지
+- [x] Backend `75 passed, 1 skipped`, Python compile, Frontend production build 통과
+
+실제 NVIDIA embedding을 사용한 Top 1~3 검색 품질, PostgreSQL 통합 테스트와 공개 URL E2E는 변경 배포 후 확인한다. 전체 Gate와 feature freeze 조건은 [`p0-release-checklist.md`](./p0-release-checklist.md)에 기록했다.
+
 ## 공개 배포 완료 (2026-08-06)
 
 - [x] Supabase PostgreSQL + pgvector migration 및 Demo seed

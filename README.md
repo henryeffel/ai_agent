@@ -84,7 +84,9 @@ Meeting Transcript
 6. SUCCEEDED 상태와 Mock resource ID 확인
 ```
 
-Render 무료 인스턴스가 절전 상태이면 첫 요청에 수십 초가 걸릴 수 있습니다.
+Render 무료 인스턴스가 절전 상태이면 첫 요청에 최대 60초 정도 걸릴 수 있습니다.
+화면은 서버 시작 가능성을 안내하며, `retryable=true`인 `502/503` 계획 생성 실패만
+한 번 자동 재시도합니다. 승인·거절·실행 요청은 자동 재시도하지 않습니다.
 공개 환경의 Productivity Provider는 `mock_microsoft_365`이며 실제 외부 부작용은
 발생하지 않습니다.
 
@@ -126,7 +128,8 @@ sequenceDiagram
 
 - 회의록을 summary, decisions, action items와 open issues로 구조화
 - NVIDIA embedding과 pgvector cosine distance 기반 조직 지식 검색
-- 검색된 chunk ID를 계획과 함께 저장해 실행 근거 추적
+- 검색된 chunk ID와 문서명·카테고리·출처·근거 본문·similarity를 계획에 함께 저장
+- 공개 화면에서 원시 Chunk ID 대신 사람이 읽을 수 있는 Evidence 카드 제공
 - 최소 유사도 기준을 충족하지 못하면 계획 생성 거부
 - LLM JSON을 Pydantic schema로 검증한 후에만 저장
 
@@ -502,13 +505,14 @@ VITE_API_URL=https://ieum-api-sgqw.onrender.com
 - 공개 Demo는 실제 Entra ID 인증이 아니라 고정 Demo actor를 사용합니다.
 - Microsoft Graph adapter는 HTTP mock으로 검증했으며 실제 tenant consent와 운영 token
   rotation은 아직 검증하지 않았습니다.
-- NVIDIA 첫 요청에서 일시적인 `502`가 발생할 수 있어 제한적 retry와 UI 안내가
-  필요합니다.
-- 현재 seed 문서와 일부 샘플 회의록의 주제가 맞지 않아 검색 근거 관련성이 낮을 수
-  있습니다.
+- NVIDIA 첫 요청의 일시적인 `502/503`은 계획 생성에 한해 한 번 자동 재시도하지만,
+  반복 장애에는 사용자의 명시적인 재요청이 필요합니다.
+- 기본 샘플은 출장비·승인 규정과 연결되도록 정리했으며, 실제 공개 embedding 검색의
+  Top 1~3 정합성은 변경 배포 후 다시 검증해야 합니다.
 - RAG 평가는 작은 합성 lexical dataset 기준이며 실제 조직 문서 corpus 평가가
   필요합니다.
-- Render 무료 인스턴스 cold start 동안 “서버 시작 중” UX가 필요합니다.
+- Render 무료 인스턴스 cold start 안내는 제공하지만 진행률이나 예상 완료 시각은
+  제공하지 않습니다.
 - rate limiting, 만료 Demo 데이터 scheduler와 외부 모니터링을 추가해야 합니다.
 - 실제 Graph/Logic Apps 실행은 별도 credential과 최소 권한 설정이 필요합니다.
 
