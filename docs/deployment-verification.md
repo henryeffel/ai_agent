@@ -1,5 +1,39 @@
 # IEUM 공개 배포 및 검증 기록
 
+## P0 Evidence UX 배포 검증 (2026-08-07)
+
+배포 대상:
+
+```text
+PR: #6 Polish demo evidence and reliability
+merge commit: cc43b33
+Alembic head: 20260807_0002
+```
+
+배포 및 자동 검증 결과:
+
+- main Backend CI 성공
+- SQLite·Mock 테스트 성공
+- PostgreSQL·pgvector 통합 테스트 성공
+- Backend Docker 이미지 빌드 성공
+- Vercel Production 배포 성공
+- Render `/health/ready` HTTP 200
+- OpenAPI에서 `EvidenceDetail`과 `ActionPlanResponse.evidence` 확인
+
+Readiness Provider:
+
+```text
+mode=demo
+llm_provider=nvidia
+vector_search_provider=pgvector
+productivity_provider=mock_microsoft_365
+azure_providers_loaded=false
+```
+
+공개 E2E에서는 기본 출장 샘플로 계획 생성을 요청했다. 최초 요청이 `502`로 실패했고, 계획 생성에만 허용한 1회 재시도 역시 `502`로 실패했다. 계획 ID가 생성되지 않았으므로 승인과 실행 요청은 보내지 않았다.
+
+따라서 이번 변경의 배포와 API schema 반영은 확인했지만, 실제 Evidence Top 1~3와 `PENDING_APPROVAL → APPROVED → SUCCEEDED` 전체 흐름은 아직 재검증되지 않았다. 반복적인 NVIDIA upstream 오류의 원인을 확인한 후 제한적 재검증이 필요하다.
+
 기준일: 2026-08-06
 
 ## 최종 배포 환경
