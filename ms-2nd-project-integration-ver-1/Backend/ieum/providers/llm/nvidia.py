@@ -72,6 +72,8 @@ class NvidiaLLMProvider(LLMProvider):
 
         try:
             payload = self._load_json_value(content, dict)
+            if not str(payload.get("summary", "")).strip():
+                payload["summary"] = transcript.strip()[:3000]
             return MeetingAnalysis.model_validate(payload)
         except json.JSONDecodeError as exc:
             raise LLMProviderError(
